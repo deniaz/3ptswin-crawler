@@ -26,7 +26,7 @@ function handleCallback (err, results, message) {
         throw err;
     }
 
-    log(`Successfully loaded node with label ${message.label}.`);
+    log(`Successfully loaded ${message.label} '${message.properties.name}'.`);
 
     if (shouldLoadRelationships(message)) {
         message.relationships.map((relation) => {
@@ -84,8 +84,6 @@ const loadRelationship = (message: RelationshipLoadMessage) => {
         : `MERGE (s)-[:${relationship.type}]->(o);`
     )
 
-    log(query.join(''));
-
     db.cypher({
         query: query.join(''),
         lean: true
@@ -94,7 +92,7 @@ const loadRelationship = (message: RelationshipLoadMessage) => {
             throw err;
         }
 
-        log('Loaded relationship.');
+        log(`Successfully loaded ${relationship.type}.`);
     });
 }
 

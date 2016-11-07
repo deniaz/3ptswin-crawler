@@ -25,18 +25,16 @@ export const parseClubData = (body: string) => {
   return club;
 };
 
-export const parseClubLinks = null;
+export const parseClubLinks = (body: string) => {
+  const $ = cheerio.load(body);
+  const links = [];
+  $('table.items tbody > tr .posrela .hauptlink .hide-for-small .spielprofil_tooltip').each((i, el) => {
+      const $link = $(el);
+      links.push({
+          url: `http://www.transfermarkt.com${$link.attr('href')}`,
+          pageType: 'player'
+      });
+  });
 
-// export const parseClubLinks = (body: string) => {
-//   const $ = cheerio.load(body);
-//   const links = [];
-//   $('table.items tbody > tr .posrela .hauptlink .hide-for-small .spielprofil_tooltip').each((i, el) => {
-//       const $link = $(el);
-//       links.push({
-//           url: `http://www.transfermarkt.com${$link.attr('href')}`,
-//           pageType: 'player'
-//       });
-//   });
-//
-//   return links;
-// }
+  return links;
+}

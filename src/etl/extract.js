@@ -67,7 +67,7 @@ export const extract = async (message: ExtractMessage) => {
                             type: 'extract',
                             content: link
                         });
-                    }, (1000 * (i+1)));
+                    }, (500 * (i+1)));
                 });
             }
         }

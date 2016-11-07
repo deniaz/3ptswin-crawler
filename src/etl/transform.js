@@ -59,7 +59,23 @@ const handlers = {
         });
     },
     player: (data) => {
+        const node: NodeLoadMessage = {
+            label: 'Player',
+            properties: {
+                id: data.player.id,
+                number: data.player.number,
+                name: data.player.name,
+                last_name: data.player.last_name,
+                first_name: data.player.first_name,
+                position: data.player.position,
+                birthday: data.player.birthday,
+                height: data.player.height.replace(',', '').replace('m', '').trim(),
+                foot: data.player.foot,
+            }
+        };
 
+        log(`Transformed ${data.player.last_name} detail data.`);
+        dispatch(createLoad('node', node));
     }
 };
 

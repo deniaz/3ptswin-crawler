@@ -2,7 +2,7 @@
 
 import { HttpClient } from '../network/http-client';
 import { TransfermarktParser } from '../parser/transfermarkt';
-import type { Team } from '../flow-typed';
+import type { Team } from '../flow-typed';
 
 export default class TransfermarktCrawler {
     static baseUrl = 'http://www.transfermarkt.com';

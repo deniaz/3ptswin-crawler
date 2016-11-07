@@ -1,7 +1,8 @@
 // @flow
-import { crawl, dispatch } from './utils';
+import { crawl, dispatch } from './utils';
 
 function extractRelevantLinks (page: string): string[] {
+    return [];
     // Scraping a[href=""],
 }
 
@@ -10,6 +11,7 @@ function extractRelevantData (page: string): any {
 }
 
 function hasExpired (url: string): boolean {
+    return true;
     // Check with Redis when url was last crawled and decide whether recrawling
     // is needed. TM sends a stupid Expires header, so a custom TTL is needed.
 }
@@ -18,7 +20,7 @@ function postponeExpiry (url: string): void {
     // Update redis URL with a new expiry
 }
 
-export const extract = (url) => {
+export const extract = (url: string) => {
     if (hasExpired(url)) {
         const page = crawl(url);
         const links = extractRelevantLinks(page);

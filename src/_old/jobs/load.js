@@ -8,10 +8,10 @@ const db = new neo4j.GraphDatabase(connection)
 
 function handleCallback (err, results) {
     if (err) {
-        dispatch(error(
+        dispatch(error({
             message: 'Error while loading node.',
             origin: err
-        ));
+        }));
     }
 
     dispatch(log({
@@ -24,7 +24,7 @@ function createNode (node: any): void {
         query: 'MERGE (n: {label} { name: {name} })',
         params: {
             label: node.type,
-            node.name
+            name: node.name
         },
         lean: true,
     }, handleCallback);

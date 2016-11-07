@@ -15,6 +15,9 @@
   "scripts": {
     "start": "babel-node bin/importer.js",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
+    "start:extract": "babel-node bin/worker.js extract",
+    "start:transform": "babel-node bin/worker.js transform",
+    "start:load": "babel-node bin/worker.js load"
   },
   "author": "Robert Vogt <robert@cheekyowl.com>",
   "license": "MIT",

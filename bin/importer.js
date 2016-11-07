@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // @flow
 
-import { createExtract, createLoad } from '../src';
-import { dispatch } from '../src';
+import { createExtract, createLoad } from '../src';
+import { dispatch } from '../src';
 
 const amqp = require('amqplib/callback_api');
 const connection = 'amqp://localhost'; // move to .env
@@ -21,7 +21,7 @@ if (!season || !competitionMap[competitionInput]) {
 }
 
 const leagueTableUrl = `${competitionMap[competitionInput]}${season}`;
-dispatch(createExtract(leagueTableUrl));
+dispatch(createExtract(leagueTableUrl, 'competition'));
 dispatch(createLoad('node', {
   label: 'Competition',
   properties: {

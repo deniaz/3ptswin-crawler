@@ -1,6 +1,12 @@
-export type ExtractMessage = string;
+export type ExtractMessage = {
+  url: string,
+  pageType: 'competition' | 'club' | 'player'
+};
 
-export type TransformMessage = {};
+export type TransformMessage = {
+  type: 'competition' | 'club' | 'player',
+  data: any
+};
 
 export type LoadMessage = {
     type: 'node' | 'relationship',
@@ -10,7 +16,7 @@ export type LoadMessage = {
 export type NodeLoadMessage = {
     label: string,
     properties: object,
-    relationships: any
+    relationships?: any
 };
 
 export type RelationshipLoadMessage = {

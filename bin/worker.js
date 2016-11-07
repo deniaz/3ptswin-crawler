@@ -24,6 +24,7 @@ if (!handler) {
 amqp.connect(connection, (error, connection) => {
     connection.createChannel((error, channel) => {
         channel.assertExchange(exchange, 'direct', { durable: true });
+        // channel.prefetch(1);
         channel.assertQueue('', { exclusive: true }, (error, queue) => {
             console.log(`Waiting for ${type} work. To exit press ctrl+c`);
 

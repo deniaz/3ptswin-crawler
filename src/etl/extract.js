@@ -1,20 +1,10 @@
 // @flow
 
-import { crawl, log } from '../utils';
+import { crawl, log, error } from '../utils';
 import { dispatch } from './dispatcher';
 import { getParser } from '../parser';
 
 import type { ExtractMessage } from '../flow-typed';
-
-function extractRelevantLinks (body: string): string[] {
-    const parser = getParser('table').links;
-    return parser(body);
-}
-
-function extractRelevantData (body: string): any {
-    const parser = getParser('table').data;
-    return parser(body);
-}
 
 function hasExpired (url: string): boolean {
     // Check with Redis when url was last crawled and decide whether recrawling
@@ -27,37 +17,60 @@ function postponeExpiry (url: string): void {
     // Update redis URL with a new expiry
 }
 
-export const extract = async (url: ExtractMessage) => {
-    if (hasExpired(url)) {
-        const page = await crawl(url);
-        const links = extractRelevantLinks(page);
-        const data = extractRelevantData(page);
+function getLinkExtractor (pageType: string) {
+    const parser = getParser(pageType).linkParser;
+    return parser;
+}
 
+function getDataExtractor (pageType: string) {
+    const parser = getParser(pageType).dataParser;
+    return parser;
+}
+
+export const extract = async (message: ExtractMessage) => {
+    const { url, pageType } = message;
+
+    if (hasExpired(url)) {
+        const extractRelevantLinks = getLinkExtractor(pageType);
+        const extractRelevantData = getDataExtractor(pageType);
+
+        if (!extractRelevantLinks && !extractRelevantData) {
+            error(`No parser found for ${pageType}`);
+            return;
+        }
+
+        const page = await crawl(url);
         postponeExpiry(url);
 
-        dispatch({
-            type: 'transform',
-            content: data,
-        });
+        if (extractRelevantData) {
+            const data = extractRelevantData(page);
+            dispatch({
+                type: 'transform',
+                content: data,
+            });
 
-        // if (links.length > 0) {
-        //     links.map((link) => {
-        //         dispatch({
-        //             type: 'extract',
-        //             content: link
-        //         })
-        //     })
-        // }
+            log(`Successfully extracted ${url}`);
+        }
 
-        // if (data) {
-        //     data.map((node) => {
-        //         dispatch({
-        //             type: 'load',
-        //             content: node
-        //         })
-        //     })
-        // }
+        if (extractRelevantLinks) {
+            const links = extractRelevantLinks(page);
 
-        log(`Successfully extracted ${url}.`);
+            if (!links) {
+                error(`No follow-up links on ${url}`);
+                return;
+            }
+
+            if (links && links.length > 0) {
+                links.map((link, i) => {
+                    setTimeout(() => {
+                        dispatch({
+                            type: 'extract',
+                            content: link
+                        });
+                    }, (1000 * (i+1)));
+                });
+            }
+        }
+
     }
 };

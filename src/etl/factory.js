@@ -2,10 +2,13 @@
 
 import type { ExtractMessage, TransformMessage, LoadMessage } from '../flow-typed';
 
-export const createExtract = (url: string): ExtractMessage => {
+export const createExtract = (url: string, type: string): ExtractMessage => {
     return {
         type: 'extract',
-        content: url
+        content: {
+            url,
+            pageType: type
+        }
     };
 };
 

@@ -3,6 +3,7 @@
 import neo4j from 'neo4j';
 import { error, log } from '../utils';
 import { dispatch } from './dispatcher';
+import { createLoad } from './factory';
 
 import type {
     LoadMessage,
@@ -29,7 +30,12 @@ function handleCallback (err, results, message) {
 
     if (shouldLoadRelationships(message)) {
         message.relationships.map((relation) => {
-            const subject = {};
+            const subject = {
+                label: message.label,
+                properties: {
+                    id: message.properties.id,
+                }
+            };
             const { object, relationship } = relation;
 
             dispatch(createLoad(
@@ -44,35 +50,53 @@ function handleCallback (err, results, message) {
     }
 }
 
-function createRelation (subject, object, descriptor) {
-    db.cypher({
-        query: 'MATCH (s:Club { id: {subject_id} }), (o:Competition { id: {object_id} }) CREATE (s)-[:TAKES_PART_IN]->(o)',
-        params: {
-            subject_id: subject.id,
-            object_id: object.id
-        },
-        lean: true
-    }, handleCallback);
-}
-
-const loadNode = (message: NodeLoadMessage) => {
-    const keys = Object.keys(message.properties);
-    const properties = keys.reduce((pre, cur) => {
-        pre.push(`${cur}: '${message.properties[cur]}'`);
+function createPropertyString (properties: Object): string {
+    const keys = Object.keys(properties);
+    const propertyList = keys.reduce((pre, cur) => {
+        pre.push(`${cur}: '${properties[cur]}'`);
 
         return pre;
     }, []);
+    return propertyList.join(', ');
+}
 
-    const query = `MERGE (c:${message.label} { ${properties.join(', ')} })`;
+const loadNode = (message: NodeLoadMessage) => {
+    const properties = createPropertyString(message.properties);
 
-    log(`Cypher Query: '${query}'`);
+    const query = `MERGE (c:${message.label} { ${properties} })`;
+
     db.cypher({
         query: query,
         lean: true
     }, (err, results) => { handleCallback(err, results, message) });
 }
 
-const loadRelationship = (message: RelationshipLoadMessage) => {}
+const loadRelationship = (message: RelationshipLoadMessage) => {
+    const { subject, object, relationship } = message;
+    const query = [
+        `MATCH (s:${subject.label} { ${createPropertyString(subject.properties)} }), `,
+        `(o:${object.label} { ${createPropertyString(object.properties)} }) `,
+    ];
+
+    query.push(
+        relationship.properties
+        ? `MERGE (s)-[:${relationship.type} { ${createPropertyString(relationship.properties)} }]->(o);`
+        : `MERGE (s)-[:${relationship.type}]->(o);`
+    )
+
+    log(query.join(''));
+
+    db.cypher({
+        query: query.join(''),
+        lean: true
+    }, (err, results) => {
+        if (err) {
+            throw err;
+        }
+
+        log('Loaded relationship.');
+    });
+}
 
 const actions = {
     node: loadNode,

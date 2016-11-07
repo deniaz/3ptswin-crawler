@@ -1,14 +1,25 @@
 // @flow
 
-import { parseClubs, parseTableLinks } from './table';
+import { parseCompetitionData, parseCompetitionLinks } from './competition';
+import { parseClubData, parseClubLinks } from './club';
+import { parsePlayerData, parsePlayerLinks } from './player';
 
-export const getParser = (criteria: any) => {
-    return parsers[criteria];
+
+export const getParser = (key: string): Object => {
+    return parsers[key];
 };
 
 const parsers = {
-    table: {
-        data: parseClubs,
-        links: parseTableLinks
+    competition: {
+        dataParser: parseCompetitionData,
+        linkParser: parseCompetitionLinks,
     },
+    club: {
+        dataParser: parseClubData,
+        linkParser: parseClubLinks,
+    },
+    player: {
+        dataParser: parsePlayerData,
+        linkParser: parsePlayerLinks,
+    }
 };
